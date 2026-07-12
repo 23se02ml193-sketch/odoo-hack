@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors — Operations console palette */
+  --color-ink: #0B1220;
+  --color-panel: #121B2E;
+  --color-panel-raised: #182338;
+  --color-hairline: #24304a;
+  --color-amber: #F4A825;
+  --color-amber-dim: #8a6318;
+  --color-teal: #3DDC97;
+  --color-teal-dim: #1f7a58;
+  --color-alert: #EF5350;
+  --color-alert-dim: #7a2c2a;
+  --color-info: #5B9FED;
+  --color-text: #E8ECF3;
+  --color-text-muted: #8A94A6;
+  --color-text-faint: #5A6478;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-ink);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(244,168,37,0.05), transparent 40%),
+    radial-gradient(circle at 100% 0%, rgba(61,220,151,0.04), transparent 40%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--color-amber);
+  color: var(--color-ink);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-ink); }
+::-webkit-scrollbar-thumb { background: var(--color-hairline); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-faint); }
+
+/* Route-line signature motif used on dashboard */
+.route-line {
+  position: relative;
+}
+.route-line::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--color-hairline) 0 6px, transparent 6px 12px);
+  z-index: 0;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
