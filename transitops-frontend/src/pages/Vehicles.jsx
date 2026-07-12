@@ -22,6 +22,7 @@ export default function Vehicles() {
   const [form, setForm] = useState(emptyForm)
   const [errors, setErrors] = useState({})
 
+  // Memoize filtered and sorted list
   const filtered = useMemo(() => {
     let list = vehicles.filter((v) =>
       (v.regNumber.toLowerCase().includes(search.toLowerCase()) || v.name.toLowerCase().includes(search.toLowerCase())) &&

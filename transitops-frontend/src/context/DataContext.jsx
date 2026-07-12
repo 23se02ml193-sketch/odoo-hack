@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import {
   SEED_VEHICLES, SEED_DRIVERS, SEED_TRIPS, SEED_MAINTENANCE, SEED_FUEL_LOGS, SEED_EXPENSES,
 } from '../data/seed'
@@ -28,6 +28,30 @@ function uid(prefix) {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}`
 }
 
+// Debounced batch localStorage sync
+function useDebouncedLocalStorageSync(vehicles, drivers, trips, maintenance, fuelLogs, expenses) {
+  const syncTimeoutRef = useRef(null)
+
+  useEffect(() => {
+    // Clear any pending sync
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
+
+    // Schedule a batch sync after 500ms of inactivity
+    syncTimeoutRef.current = setTimeout(() => {
+      localStorage.setItem(KEYS.vehicles, JSON.stringify(vehicles))
+      localStorage.setItem(KEYS.drivers, JSON.stringify(drivers))
+      localStorage.setItem(KEYS.trips, JSON.stringify(trips))
+      localStorage.setItem(KEYS.maintenance, JSON.stringify(maintenance))
+      localStorage.setItem(KEYS.fuelLogs, JSON.stringify(fuelLogs))
+      localStorage.setItem(KEYS.expenses, JSON.stringify(expenses))
+    }, 500)
+
+    return () => {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
+    }
+  }, [vehicles, drivers, trips, maintenance, fuelLogs, expenses])
+}
+
 export function DataProvider({ children }) {
   const [vehicles, setVehicles] = useState(() => load(KEYS.vehicles, SEED_VEHICLES))
   const [drivers, setDrivers] = useState(() => load(KEYS.drivers, SEED_DRIVERS))
@@ -37,12 +61,21 @@ export function DataProvider({ children }) {
   const [expenses, setExpenses] = useState(() => load(KEYS.expenses, SEED_EXPENSES))
   const [toast, setToast] = useState(null)
 
-  useEffect(() => localStorage.setItem(KEYS.vehicles, JSON.stringify(vehicles)), [vehicles])
-  useEffect(() => localStorage.setItem(KEYS.drivers, JSON.stringify(drivers)), [drivers])
-  useEffect(() => localStorage.setItem(KEYS.trips, JSON.stringify(trips)), [trips])
-  useEffect(() => localStorage.setItem(KEYS.maintenance, JSON.stringify(maintenance)), [maintenance])
-  useEffect(() => localStorage.setItem(KEYS.fuelLogs, JSON.stringify(fuelLogs)), [fuelLogs])
-  useEffect(() => localStorage.setItem(KEYS.expenses, JSON.stringify(expenses)), [expenses])
+  // Batch localStorage writes with debounce instead of individual effects
+  useDebouncedLocalStorageSync(vehicles, drivers, trips, maintenance, fuelLogs, expenses)
+
+  // Pre-compute lookup maps for O(1) access instead of O(n) searches
+  const vehicleMap = useCallback(() => {
+    const map = {}
+    vehicles.forEach((v) => { map[v.id] = v })
+    return map
+  }, [vehicles])
+
+  const driverMap = useCallback(() => {
+    const map = {}
+    drivers.forEach((d) => { map[d.id] = d })
+    return map
+  }, [drivers])
 
   const notify = useCallback((message, type = 'success') => {
     setToast({ message, type, id: Date.now() })
@@ -190,13 +223,30 @@ export function DataProvider({ children }) {
     notify('Expense recorded.')
   }, [notify])
 
-  // ---------- Derived cost helpers ----------
-  const vehicleFuelCost = useCallback((vehicleId) => fuelLogs.filter((f) => f.vehicleId === vehicleId).reduce((s, f) => s + f.cost, 0), [fuelLogs])
-  const vehicleMaintenanceCost = useCallback((vehicleId) => maintenance.filter((m) => m.vehicleId === vehicleId).reduce((s, m) => s + m.cost, 0), [maintenance])
-  const vehicleExpenseCost = useCallback((vehicleId) => expenses.filter((e) => e.vehicleId === vehicleId).reduce((s, e) => s + e.amount, 0), [expenses])
-  const vehicleOperationalCost = useCallback((vehicleId) => vehicleFuelCost(vehicleId) + vehicleMaintenanceCost(vehicleId) + vehicleExpenseCost(vehicleId), [vehicleFuelCost, vehicleMaintenanceCost, vehicleExpenseCost])
-  const vehicleDistance = useCallback((vehicleId) => trips.filter((t) => t.vehicleId === vehicleId && t.status === 'Completed').reduce((s, t) => s + (t.actualDistance || 0), 0), [trips])
-  const vehicleFuelUsed = useCallback((vehicleId) => fuelLogs.filter((f) => f.vehicleId === vehicleId).reduce((s, f) => s + f.liters, 0), [fuelLogs])
+  // ---------- Derived cost helpers with memoization ----------
+  const vehicleFuelCost = useCallback((vehicleId) => {
+    return fuelLogs.filter((f) => f.vehicleId === vehicleId).reduce((s, f) => s + f.cost, 0)
+  }, [fuelLogs])
+
+  const vehicleMaintenanceCost = useCallback((vehicleId) => {
+    return maintenance.filter((m) => m.vehicleId === vehicleId).reduce((s, m) => s + m.cost, 0)
+  }, [maintenance])
+
+  const vehicleExpenseCost = useCallback((vehicleId) => {
+    return expenses.filter((e) => e.vehicleId === vehicleId).reduce((s, e) => s + e.amount, 0)
+  }, [expenses])
+
+  const vehicleOperationalCost = useCallback((vehicleId) => {
+    return vehicleFuelCost(vehicleId) + vehicleMaintenanceCost(vehicleId) + vehicleExpenseCost(vehicleId)
+  }, [vehicleFuelCost, vehicleMaintenanceCost, vehicleExpenseCost])
+
+  const vehicleDistance = useCallback((vehicleId) => {
+    return trips.filter((t) => t.vehicleId === vehicleId && t.status === 'Completed').reduce((s, t) => s + (t.actualDistance || 0), 0)
+  }, [trips])
+
+  const vehicleFuelUsed = useCallback((vehicleId) => {
+    return fuelLogs.filter((f) => f.vehicleId === vehicleId).reduce((s, f) => s + f.liters, 0)
+  }, [fuelLogs])
 
   const resetDemoData = useCallback(() => {
     setVehicles(SEED_VEHICLES); setDrivers(SEED_DRIVERS); setTrips(SEED_TRIPS)
@@ -206,6 +256,7 @@ export function DataProvider({ children }) {
 
   const value = {
     vehicles, drivers, trips, maintenance, fuelLogs, expenses,
+    vehicleMap, driverMap,
     addVehicle, updateVehicle, deleteVehicle,
     addDriver, updateDriver, deleteDriver,
     createTrip, dispatchTrip, completeTrip, cancelTrip,

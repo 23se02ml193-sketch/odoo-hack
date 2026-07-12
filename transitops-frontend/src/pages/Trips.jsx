@@ -1,15 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback, useRef, useEffect } from 'react'
 import { Plus, Route as RouteIcon, PlayCircle, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
 import { useData } from '../context/DataContext'
 import { PageHeader, Card, Button, Field, Input, Select, EmptyState } from '../components/ui'
 import Modal from '../components/Modal'
 import StatusBadge from '../components/StatusBadge'
-import { validateTripCreation } from '../utils/rules'
+import { validateTripCreation, createDebounce } from '../utils/rules'
 
 const emptyForm = { source: '', destination: '', vehicleId: '', driverId: '', cargoWeight: '', plannedDistance: '' }
 
 export default function Trips() {
-  const { vehicles, drivers, trips, createTrip, dispatchTrip, completeTrip, cancelTrip } = useData()
+  const { vehicles, drivers, trips, createTrip, dispatchTrip, completeTrip, cancelTrip, vehicleMap, driverMap } = useData()
   const [statusFilter, setStatusFilter] = useState('All')
   const [modalOpen, setModalOpen] = useState(false)
   const [completeModal, setCompleteModal] = useState(null)
@@ -17,28 +17,38 @@ export default function Trips() {
   const [form, setForm] = useState(emptyForm)
   const [liveErrors, setLiveErrors] = useState([])
 
-  const availableVehicles = vehicles.filter((v) => v.status === 'Available')
-  const availableDrivers = drivers.filter((d) => d.status === 'Available')
+  // Pre-compute lookup maps for O(1) access
+  const vMap = useMemo(() => vehicleMap(), [vehicleMap])
+  const dMap = useMemo(() => driverMap(), [driverMap])
+
+  const availableVehicles = useMemo(() => vehicles.filter((v) => v.status === 'Available'), [vehicles])
+  const availableDrivers = useMemo(() => drivers.filter((d) => d.status === 'Available'), [drivers])
 
   const filtered = useMemo(() => trips.filter((t) => statusFilter === 'All' || t.status === statusFilter)
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)), [trips, statusFilter])
 
-  const vehicleOf = (id) => vehicles.find((v) => v.id === id)
-  const driverOf = (id) => drivers.find((d) => d.id === id)
+  // Debounce live validation to avoid redundant checks
+  const debouncedCheckLiveRef = useRef(null)
+  useEffect(() => {
+    if (!debouncedCheckLiveRef.current) {
+      debouncedCheckLiveRef.current = createDebounce((next) => {
+        const vehicle = vehicles.find((v) => v.id === next.vehicleId)
+        const driver = drivers.find((d) => d.id === next.driverId)
+        if (!vehicle && !driver && !next.cargoWeight) { setLiveErrors([]); return }
+        setLiveErrors(validateTripCreation({ vehicle, driver, cargoWeight: Number(next.cargoWeight) || 0 }))
+      }, 300)
+    }
+  }, [])
 
   const openCreate = () => { setForm(emptyForm); setLiveErrors([]); setModalOpen(true) }
-
-  const checkLive = (next) => {
-    const vehicle = vehicles.find((v) => v.id === next.vehicleId)
-    const driver = drivers.find((d) => d.id === next.driverId)
-    if (!vehicle && !driver && !next.cargoWeight) { setLiveErrors([]); return }
-    setLiveErrors(validateTripCreation({ vehicle, driver, cargoWeight: Number(next.cargoWeight) || 0 }))
-  }
 
   const updateForm = (patch) => {
     const next = { ...form, ...patch }
     setForm(next)
-    checkLive(next)
+    // Debounce validation on every keystroke
+    if (debouncedCheckLiveRef.current) {
+      debouncedCheckLiveRef.current(next)
+    }
   }
 
   const handleSubmit = (e) => {
@@ -79,8 +89,9 @@ export default function Trips() {
       ) : (
         <div className="space-y-3">
           {filtered.map((t) => {
-            const vehicle = vehicleOf(t.vehicleId)
-            const driver = driverOf(t.driverId)
+            // Use pre-mapped lookups instead of .find() on every render
+            const vehicle = vMap[t.vehicleId]
+            const driver = dMap[t.driverId]
             return (
               <Card key={t.id} className="p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -113,7 +124,7 @@ export default function Trips() {
                 </div>
                 {t.status === 'Completed' && (
                   <p className="mt-3 border-t border-[--color-hairline] pt-2.5 text-xs text-[--color-text-faint]">
-                    Actual distance: <span className="font-mono text-[--color-text-muted]">{t.actualDistance}km</span> · Fuel consumed: <span className="font-mono text-[--color-text-muted]">{t.fuelConsumed}L</span> · Completed {t.completedAt}
+                    Actual distance: <span className="font-mono text-[--color-text-muted]">{t.actualDistance}km</span> · Fuel consumed: <span className="font-mono text-[--color-text-muted]">{t.fuelConsumed}L</span>
                   </p>
                 )}
               </Card>

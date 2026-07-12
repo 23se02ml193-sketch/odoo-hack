@@ -8,7 +8,7 @@ class FleetVehicle(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(string='Vehicle Name', required=True, tracking=True)
-    registration_no = fields.Char(string='Registration Number', required=True, copy=False, tracking=True)
+    registration_no = fields.Char(string='Registration Number', required=True, copy=False, tracking=True, index=True)
     model = fields.Char(string='Vehicle Model', required=True)
     type = fields.Selection([
         ('sedan', 'Sedan'),
@@ -29,7 +29,7 @@ class FleetVehicle(models.Model):
         ('on_trip', 'On Trip'),
         ('in_shop', 'In Shop'),
         ('retired', 'Retired')
-    ], string='Status', default='available', tracking=True, required=True)
+    ], string='Status', default='available', tracking=True, required=True, index=True)
 
     # Relationships
     trip_ids = fields.One2many('transit.trip', 'vehicle_id', string='Trips')
@@ -48,12 +48,14 @@ class FleetVehicle(models.Model):
 
     @api.depends('trip_ids', 'maintenance_ids')
     def _compute_stats(self):
+        """Compute trip and maintenance counts. Using len() is efficient here as we already have the records."""
         for rec in self:
             rec.trip_count = len(rec.trip_ids)
             rec.maintenance_count = len(rec.maintenance_ids)
 
     @api.depends('expense_ids.amount')
     def _compute_operational_cost(self):
+        """Compute total operational cost from expenses. Using mapped() is efficient for this aggregation."""
         for rec in self:
             rec.total_operational_cost = sum(rec.expense_ids.mapped('amount'))
 
