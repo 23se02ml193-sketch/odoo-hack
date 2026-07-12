@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_transit_expense_tree" model="ir.ui.view">
+        <name>transit.expense.tree</name>
+        <model>transit.expense</model>
+        <arch type="xml">
+            <tree string="Expenses">
+                <field name="expense_date"/>
+                <field name="vehicle_id"/>
+                <field name="expense_type"/>
+                <field name="description"/>
+                <field name="amount" sum="Total Expenses"/>
+            </tree>
+        </arch>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_transit_expense_form" model="ir.ui.view">
+        <name>transit.expense.form</name>
+        <model>transit.expense</model>
+        <arch type="xml">
+            <form string="Vehicle Expense">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="vehicle_id"/>
+                            <field name="expense_type"/>
+                            <field name="amount"/>
+                        </group>
+                        <group>
+                            <field name="expense_date"/>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </arch>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="view_transit_expense_pivot" model="ir.ui.view">
+        <name>transit.expense.pivot</name>
+        <model>transit.expense</model>
+        <arch type="xml">
+            <pivot string="Expense Matrix">
+                <field name="vehicle_id" type="row"/>
+                <field name="expense_type" type="col"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </arch>
+    </record>
+
+    <!-- Action -->
+    <record id="action_transit_expense" model="ir.actions.act_window">
+        <name>Expenses</name>
+        <res_model>transit.expense</res_model>
+        <view_mode>tree,form,pivot</view_mode>
+    </record>
+</odoo>

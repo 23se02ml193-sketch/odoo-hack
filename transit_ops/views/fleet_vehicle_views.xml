@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sequence for Trip Number -->
+    <record id="seq_transit_trip" model="ir.sequence">
+        <name>Trip Number</name>
+        <code>transit.trip</code>
+        <prefix>TRIP/</prefix>
+        <padding>5</padding>
+        <company_id eval="False"/>
+    </record>
+
+    <!-- Sequence for Maintenance Number -->
+    <record id="seq_transit_maintenance" model="ir.sequence">
+        <name>Maintenance Number</name>
+        <code>transit.maintenance</code>
+        <prefix>MNT/</prefix>
+        <padding>5</padding>
+        <company_id eval="False"/>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_transit_vehicle_tree" model="ir.ui.view">
+        <name>transit.vehicle.tree</name>
+        <model>transit.vehicle</model>
+        <arch type="xml">
+            <tree string="Vehicles" decoration-success="status == 'available'" decoration-warning="status == 'on_trip'" decoration-danger="status == 'in_shop'" decoration-muted="status == 'retired'">
+                <field name="name"/>
+                <field name="registration_no"/>
+                <field name="model"/>
+                <field name="type"/>
+                <field name="max_capacity"/>
+                <field name="odometer"/>
+                <field name="insurance_expiry"/>
+                <field name="status" widget="badge" decoration-success="status == 'available'" decoration-warning="status == 'on_trip'" decoration-danger="status == 'in_shop'" decoration-muted="status == 'retired'"/>
+                <field name="total_operational_cost" sum="Total Operational Cost"/>
+            </tree>
+        </arch>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_transit_vehicle_form" model="ir.ui.view">
+        <name>transit.vehicle.form</name>
+        <model>transit.vehicle</model>
+        <arch type="xml">
+            <form string="Vehicle">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="available,on_trip,in_shop,retired"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_trips" type="object" class="oe_stat_button" icon="fa-road">
+                            <field name="trip_count" widget="statinfo" string="Trips"/>
+                        </button>
+                        <button name="action_view_maintenance" type="object" class="oe_stat_button" icon="fa-wrench">
+                            <field name="maintenance_count" widget="statinfo" string="Maintenance"/>
+                        </button>
+                    </div>
+                    <field name="image" widget="image" class="oe_avatar" options="{'zoom': true, 'preview_image': 'image'}"/>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Volvo FH16"/>
+                        </h1>
+                        <label for="registration_no" class="oe_edit_only"/>
+                        <h3>
+                            <field name="registration_no" placeholder="e.g. TX-999-AB"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group string="Specifications">
+                            <field name="model"/>
+                            <field name="type"/>
+                            <field name="max_capacity"/>
+                            <field name="odometer"/>
+                        </group>
+                        <group string="Financials &amp; Documents">
+                            <field name="purchase_date"/>
+                            <field name="acquisition_cost"/>
+                            <field name="insurance_expiry"/>
+                            <field name="document" filename="name"/>
+                            <field name="total_operational_cost"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Trips" name="trips">
+                            <field name="trip_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="source"/>
+                                    <field name="destination"/>
+                                    <field name="driver_id"/>
+                                    <field name="status"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Maintenance Log" name="maintenance">
+                            <field name="maintenance_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="issue"/>
+                                    <field name="priority"/>
+                                    <field name="status"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Fuel Logs" name="fuel">
+                            <field name="fuel_ids" readonly="1">
+                                <tree>
+                                    <field name="date"/>
+                                    <field name="liters"/>
+                                    <field name="price_per_liter"/>
+                                    <field name="total_cost"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </arch>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="view_transit_vehicle_kanban" model="ir.ui.view">
+        <name>transit.vehicle.kanban</name>
+        <model>transit.vehicle</model>
+        <arch type="xml">
+            <kanban default_group_by="status" class="o_kanban_mobile">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="registration_no"/>
+                <field name="model"/>
+                <field name="type"/>
+                <field name="status"/>
+                <field name="image"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex flex-row p-2 align-items-center">
+                            <div class="me-3">
+                                <t t-if="record.image.raw_value">
+                                    <img t-att-src="kanban_image('transit.vehicle', 'image', record.id.raw_value)" class="avatar rounded" style="width: 60px; height: 60px; object-fit: cover;" alt="Vehicle"/>
+                                </t>
+                                <t t-else="">
+                                    <span class="fa fa-truck text-muted" style="font-size: 40px;"/>
+                                </t>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold fs-5 text-primary">
+                                    <field name="name"/>
+                                </div>
+                                <div class="text-muted">
+                                    <field name="registration_no"/> - <field name="model"/>
+                                </div>
+                                <div class="mt-1">
+                                    <span class="badge rounded-pill bg-light text-dark">
+                                        <field name="type"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </arch>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_transit_vehicle_search" model="ir.ui.view">
+        <name>transit.vehicle.search</name>
+        <model>transit.vehicle</model>
+        <arch type="xml">
+            <search string="Search Vehicles">
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('registration_no', 'ilike', self)]"/>
+                <field name="registration_no"/>
+                <field name="model"/>
+                <filter string="Available" name="available" domain="[('status', '=', 'available')]"/>
+                <filter string="On Trip" name="on_trip" domain="[('status', '=', 'on_trip')]"/>
+                <filter string="In Shop" name="in_shop" domain="[('status', '=', 'in_shop')]"/>
+                <filter string="Retired" name="retired" domain="[('status', '=', 'retired')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="group_by_status" context="{'group_by': 'status'}"/>
+                    <filter string="Type" name="group_by_type" context="{'group_by': 'type'}"/>
+                </group>
+            </search>
+        </arch>
+    </record>
+
+    <!-- Graph View -->
+    <record id="view_transit_vehicle_graph" model="ir.ui.view">
+        <name>transit.vehicle.graph</name>
+        <model>transit.vehicle</model>
+        <arch type="xml">
+            <graph string="Vehicles by Status" type="bar">
+                <field name="status"/>
+            </group>
+        </arch>
+    </record>
+
+    <!-- Action -->
+    <record id="action_transit_vehicle" model="ir.actions.act_window">
+        <name>Vehicles</name>
+        <res_model>transit.vehicle</res_model>
+        <view_mode>kanban,tree,form,graph</view_mode>
+        <search_view_id ref="view_transit_vehicle_search"/>
+        <help type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Register your first fleet vehicle!
+            </p>
+            <p>
+                Track capacity, odometer readings, and status configurations.
+            </p>
+        </help>
+    </record>
+</odoo>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Demo Vehicles -->
+        <record id="vehicle_1" model="transit.vehicle">
+            <name>Volvo FH16 Heavy Truck</name>
+            <registration_no>VOL-982-HA</name>
+            <model>FH16 - 2023</model>
+            <type>semi</type>
+            <max_capacity>25000.0</max_capacity>
+            <odometer>12500.0</odometer>
+            <purchase_date>2023-01-15</purchase_date>
+            <acquisition_cost>145000.00</acquisition_cost>
+            <insurance_expiry>2027-01-15</insurance_expiry>
+            <status>available</status>
+        </record>
+
+        <record id="vehicle_2" model="transit.vehicle">
+            <name>Ford Transit Delivery Van</name>
+            <registration_no>FRD-004-TX</registration_no>
+            <model>Transit Cargo Van 2022</model>
+            <type>van</type>
+            <max_capacity>3500.0</max_capacity>
+            <odometer>45800.0</odometer>
+            <purchase_date>2022-06-20</purchase_date>
+            <acquisition_cost>42000.00</acquisition_cost>
+            <insurance_expiry>2027-06-20</insurance_expiry>
+            <status>available</status>
+        </record>
+
+        <!-- Demo Drivers -->
+        <record id="driver_1" model="transit.driver">
+            <name>John Doe</name>
+            <email>john.doe@transitops.com</email>
+            <phone>+1-555-0199</phone>
+            <license_no>DL-908234-A</license_no>
+            <license_category>Class A CDL</license_category>
+            <license_expiry>2028-12-31</license_expiry>
+            <safety_score>95.5</safety_score>
+            <status>available</status>
+            <address>123 Highway Blvd, Dallas, TX</address>
+            <emergency_contact>Mary Doe (+1-555-0198)</emergency_contact>
+        </record>
+
+        <record id="driver_2" model="transit.driver">
+            <name>Jane Smith</name>
+            <email>jane.smith@transitops.com</email>
+            <phone>+1-555-0188</phone>
+            <license_no>DL-542198-B</license_no>
+            <license_category>Class B CDL</license_category>
+            <license_expiry>2029-05-15</license_expiry>
+            <safety_score>98.2</safety_score>
+            <status>available</status>
+            <address>456 Freight Way, Houston, TX</address>
+            <emergency_contact>Robert Smith (+1-555-0187)</emergency_contact>
+        </record>
+
+        <!-- Demo Trips -->
+        <record id="trip_1" model="transit.trip">
+            <source>Dallas Warehouse A</source>
+            <destination>Houston Terminal 2</destination>
+            <vehicle_id ref="vehicle_1"/>
+            <driver_id ref="driver_1"/>
+            <cargo_weight>18000.0</cargo_weight>
+            <planned_distance>385.0</planned_distance>
+            <revenue>1200.00</revenue>
+            <status>draft</status>
+        </record>
+
+        <!-- Demo Maintenance -->
+        <record id="maintenance_1" model="transit.maintenance">
+            <vehicle_id ref="vehicle_2"/>
+            <issue>Engine Oil Change &amp; Filter Replacement</issue>
+            <priority>medium</priority>
+            <technician>Mark Mechanic</technician>
+            <estimated_cost>150.00</estimated_cost>
+            <actual_cost>145.00</actual_cost>
+            <start_date>2026-07-01</start_date>
+            <end_date>2026-07-01</end_date>
+            <status>completed</status>
+            <description>Routine engine oil service. Replaced oil filter and topped up coolant fluids.</description>
+        </record>
+
+        <!-- Demo Fuel Logs -->
+        <record id="fuel_log_1" model="transit.fuel.log">
+            <vehicle_id ref="vehicle_1"/>
+            <fuel_type>diesel</fuel_type>
+            <liters>150.0</liters>
+            <price_per_liter>1.45</price_per_liter>
+            <station>Shell Dallas East</station>
+            <date>2026-07-05</date>
+            <odometer>12650.0</odometer>
+        </record>
+    </data>
+</odoo>

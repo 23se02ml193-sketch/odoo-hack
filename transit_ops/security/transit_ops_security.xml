@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Module Category -->
+        <record id="module_category_transit_ops" model="ir.module.category">
+            <name>TransitOps</name>
+            <description>TransitOps Access Control Levels</description>
+            <sequence>20</sequence>
+        </record>
+
+        <!-- Driver Group -->
+        <record id="group_transit_driver" model="res.groups">
+            <name>Driver</name>
+            <category_id ref="module_category_transit_ops"/>
+            <implied_ids eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Safety Officer Group -->
+        <record id="group_transit_safety_officer" model="res.groups">
+            <name>Safety Officer</name>
+            <category_id ref="module_category_transit_ops"/>
+            <implied_ids eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Financial Analyst Group -->
+        <record id="group_transit_financial_analyst" model="res.groups">
+            <name>Financial Analyst</name>
+            <category_id ref="module_category_transit_ops"/>
+            <implied_ids eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Fleet Manager Group -->
+        <record id="group_transit_manager" model="res.groups">
+            <name>Fleet Manager</name>
+            <category_id ref="module_category_transit_ops"/>
+            <implied_ids eval="[(4, ref('group_transit_driver')), (4, ref('group_transit_safety_officer')), (4, ref('group_transit_financial_analyst'))]"/>
+            <users eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+
+    <data noupdate="1">
+        <!-- Record Rules -->
+        <!-- Driver Record Rules: Drivers can only view their own driver profile -->
+        <record id="rule_driver_own_profile" model="ir.rule">
+            <name>Driver: Own Profile</name>
+            <model_id ref="model_transit_driver"/>
+            <groups eval="[(4, ref('group_transit_driver'))]"/>
+            <!-- Simplification for demo: matching by email or user or read-only, but let's do a simple check.
+                 Assuming drivers can see their own. For simplicity let's allow read access to all drivers but restrict editing, 
+                 or filter: [('email', '=', user.email)] -->
+            <domain_force>[('email', '=', user.email)]</domain_force>
+            <perm_read eval="1"/>
+            <perm_write eval="0"/>
+            <perm_create eval="0"/>
+            <perm_unlink eval="0"/>
+        </record>
+
+        <!-- Driver Record Rules: Drivers can only view their own assigned trips -->
+        <record id="rule_driver_own_trips" model="ir.rule">
+            <name>Driver: Own Trips</name>
+            <model_id ref="model_transit_trip"/>
+            <groups eval="[(4, ref('group_transit_driver'))]"/>
+            <domain_force>[('driver_id.email', '=', user.email)]</domain_force>
+            <perm_read eval="1"/>
+            <perm_write eval="0"/>
+            <perm_create eval="0"/>
+            <perm_unlink eval="0"/>
+        </record>
+
+        <!-- Fleet Manager Record Rules: Full access to all vehicles -->
+        <record id="rule_manager_all_vehicles" model="ir.rule">
+            <name>Manager: All Vehicles</name>
+            <model_id ref="model_transit_vehicle"/>
+            <groups eval="[(4, ref('group_transit_manager'))]"/>
+            <domain_force>[(1, '=', 1)]</domain_force>
+            <perm_read eval="1"/>
+            <perm_write eval="1"/>
+            <perm_create eval="1"/>
+            <perm_unlink eval="1"/>
+        </record>
+    </data>
+</odoo>

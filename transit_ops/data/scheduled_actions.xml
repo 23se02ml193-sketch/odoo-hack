@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- License Expiry Reminder Cron -->
+        <record id="cron_license_expiry_reminder" model="ir.cron">
+            <name>Driver License Expiry Reminder</name>
+            <model_id ref="model_transit_driver"/>
+            <state>code</state>
+            <code >
+# Find drivers with license expiring in next 30 days
+from datetime import date, timedelta
+limit_date = date.today() + timedelta(days=30)
+drivers = env['transit.driver'].search([('license_expiry', '&lt;=', limit_date), ('status', '!=', 'suspended')])
+for driver in drivers:
+    # Post a message or create an activity for safety officers/admin
+    driver.message_post(
+        body=f"WARNING: Driver {driver.name}'s license is expiring on {driver.license_expiry}. Please renew to prevent suspension.",
+        subject="Driver License Expiry Warning"
+    )
+    # Also record in notification model
+    env['transit.notification'].create({
+        'title': f"License Expiry: {driver.name}",
+        'description': f"License {driver.license_no} expires on {driver.license_expiry}.",
+        'priority': 'high',
+        'user_id': env.user.id
+    })
+            </code>
+            <interval_number>1</interval_number>
+            <interval_type>days</interval_type>
+            <numbercall>-1</numbercall>
+            <active>True</active>
+        </record>
+
+        <!-- Insurance Expiry Reminder Cron -->
+        <record id="cron_insurance_expiry_reminder" model="ir.cron">
+            <name>Vehicle Insurance Expiry Reminder</name>
+            <model_id ref="model_transit_vehicle"/>
+            <state>code</state>
+            <code >
+from datetime import date, timedelta
+limit_date = date.today() + timedelta(days=30)
+vehicles = env['transit.vehicle'].search([('insurance_expiry', '&lt;=', limit_date), ('status', '!=', 'retired')])
+for vehicle in vehicles:
+    vehicle.message_post(
+        body=f"WARNING: Vehicle {vehicle.name} ({vehicle.registration_no}) insurance expires on {vehicle.insurance_expiry}. Please renew.",
+        subject="Insurance Expiry Warning"
+    )
+    env['transit.notification'].create({
+        'title': f"Insurance Expiry: {vehicle.registration_no}",
+        'description': f"Insurance for {vehicle.name} expires on {vehicle.insurance_expiry}.",
+        'priority': 'high',
+        'user_id': env.user.id
+    })
+            </code>
+            <interval_number>1</interval_number>
+            <interval_type>days</interval_type>
+            <numbercall>-1</numbercall>
+            <active>True</active>
+        </record>
+
+        <!-- Maintenance Overdue Reminder Cron -->
+        <record id="cron_maintenance_reminder" model="ir.cron">
+            <name>Maintenance Reminders</name>
+            <model_id ref="model_transit_maintenance"/>
+            <state>code</state>
+            <code >
+# Find pending maintenance tasks older than 7 days
+from datetime import date, timedelta
+limit_date = date.today() - timedelta(days=7)
+maintenance_records = env['transit.maintenance'].search([('status', '=', 'pending'), ('create_date', '&lt;=', limit_date)])
+for mnt in maintenance_records:
+    mnt.message_post(
+        body=f"Overdue Maintenance Approval: Task {mnt.name} for {mnt.vehicle_id.name} is still pending approval.",
+        subject="Maintenance Approval Pending"
+    )
+    env['transit.notification'].create({
+        'title': f"Overdue Maintenance: {mnt.name}",
+        'description': f"Maintenance request for {mnt.vehicle_id.name} - '{mnt.issue}' requires immediate attention.",
+        'priority': 'medium',
+        'user_id': env.user.id
+    })
+            </code>
+            <interval_number>1</interval_number>
+            <interval_type>days</interval_type>
+            <numbercall>-1</numbercall>
+            <active>True</active>
+        </record>
+
+        <!-- Trip Reminder Cron -->
+        <record id="cron_trip_reminder" model="ir.cron">
+            <name>Dispatched Trip Reminders</name>
+            <model_id ref="model_transit_trip"/>
+            <state>code</state>
+            <code >
+# Alert if trip dispatched for more than 48 hours is not completed
+from datetime import datetime, timedelta
+limit_date = datetime.now() - timedelta(hours=48)
+trips = env['transit.trip'].search([('status', '=', 'dispatched'), ('dispatch_date', '&lt;=', limit_date)])
+for trip in trips:
+    trip.message_post(
+        body=f"Alert: Trip {trip.name} has been dispatched since {trip.dispatch_date} and is still not marked completed.",
+        subject="Delayed Trip Notification"
+    )
+    env['transit.notification'].create({
+        'title': f"Delayed Trip: {trip.name}",
+        'description': f"Route: {trip.source} to {trip.destination} with vehicle {trip.vehicle_id.name}.",
+        'priority': 'high',
+        'user_id': env.user.id
+    })
+            </code>
+            <interval_number>1</interval_number>
+            <interval_type>days</interval_type>
+            <numbercall>-1</numbercall>
+            <active>True</active>
+        </record>
+    </data>
+</odoo>

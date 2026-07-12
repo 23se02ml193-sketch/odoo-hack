@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vehicle Profile Report Template -->
+    <template id="report_vehicle_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="row mb-4">
+                            <div class="col-8">
+                                <h2 class="text-primary fw-bold">Vehicle Specification Profile</h2>
+                                <h4><span t-field="o.name"/> (<span t-field="o.registration_no"/>)</h4>
+                            </div>
+                            <div class="col-4 text-end">
+                                <span class="badge rounded-pill bg-primary fs-6 py-2 px-3 text-uppercase">
+                                    <span t-field="o.status"/>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4 border-top pt-3">
+                            <div class="col-6">
+                                <strong>Vehicle Model:</strong> <span t-field="o.model"/><br/>
+                                <strong>Vehicle Type:</strong> <span t-field="o.type"/><br/>
+                                <strong>Load Capacity:</strong> <span t-field="o.max_capacity"/> kg<br/>
+                                <strong>Current Odometer:</strong> <span t-field="o.odometer"/> km
+                            </div>
+                            <div class="col-6">
+                                <strong>Purchase Date:</strong> <span t-field="o.purchase_date"/><br/>
+                                <strong>Acquisition Cost:</strong> $<span t-field="o.acquisition_cost" t-options='{"widget": "float", "precision": 2}'/><br/>
+                                <strong>Insurance Expiry:</strong> <span t-field="o.insurance_expiry"/><br/>
+                                <strong>Total Operational Cost:</strong> $<span t-field="o.total_operational_cost" t-options='{"widget": "float", "precision": 2}'/>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4 border-bottom pb-2">Recent Fuel Logs</h4>
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Station</th>
+                                    <th>Fuel Type</th>
+                                    <th class="text-end">Liters</th>
+                                    <th class="text-end">Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.fuel_ids[:5]" t-as="fuel">
+                                    <td><span t-field="fuel.date"/></td>
+                                    <td><span t-field="fuel.station"/></td>
+                                    <td><span t-field="fuel.fuel_type"/></td>
+                                    <td class="text-end"><span t-field="fuel.liters"/> L</td>
+                                    <td class="text-end">$<span t-field="fuel.total_cost" t-options='{"widget": "float", "precision": 2}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4 border-bottom pb-2">Recent Maintenance</h4>
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Mnt No.</th>
+                                    <th>Issue</th>
+                                    <th>Priority</th>
+                                    <th>Technician</th>
+                                    <th class="text-end">Actual Cost</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.maintenance_ids[:5]" t-as="mnt">
+                                    <td><span t-field="mnt.name"/></td>
+                                    <td><span t-field="mnt.issue"/></td>
+                                    <td><span t-field="mnt.priority"/></td>
+                                    <td><span t-field="mnt.technician"/></td>
+                                    <td class="text-end">$<span t-field="mnt.actual_cost" t-options='{"widget": "float", "precision": 2}'/></td>
+                                    <td><span t-field="mnt.status"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Trip Report Template -->
+    <template id="report_trip_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="row mb-4">
+                            <div class="col-8">
+                                <h2 class="text-primary fw-bold">Trip Manifest</h2>
+                                <h4>Trip Number: <span t-field="o.name"/></h4>
+                            </div>
+                            <div class="col-4 text-end">
+                                <span class="badge bg-secondary fs-6 py-2 px-3 text-uppercase">
+                                    <span t-field="o.status"/>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4 border-top pt-3">
+                            <div class="col-6">
+                                <strong>Source Address:</strong> <span t-field="o.source"/><br/>
+                                <strong>Destination Address:</strong> <span t-field="o.destination"/><br/>
+                                <strong>Vehicle:</strong> <span t-field="o.vehicle_id.name"/> (<span t-field="o.vehicle_id.registration_no"/>)<br/>
+                                <strong>Driver Name:</strong> <span t-field="o.driver_id.name"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>Cargo Weight:</strong> <span t-field="o.cargo_weight"/> kg<br/>
+                                <strong>Planned Distance:</strong> <span t-field="o.planned_distance"/> km<br/>
+                                <strong>Actual Distance:</strong> <span t-field="o.actual_distance"/> km<br/>
+                                <strong>Dispatch Date:</strong> <span t-field="o.dispatch_date"/>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4 border-top pt-3">
+                            <div class="col-6">
+                                <strong>Fuel Consumed:</strong> <span t-field="o.fuel_consumed"/> Liters
+                            </div>
+                            <div class="col-6 text-end">
+                                <h4 class="text-success fw-bold">Revenue: $<span t-field="o.revenue" t-options='{"widget": "float", "precision": 2}'/></h4>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Maintenance Details Template -->
+    <template id="report_maintenance_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="row mb-4">
+                            <div class="col-8">
+                                <h2 class="text-primary fw-bold">Maintenance Job Sheet</h2>
+                                <h4>Job Number: <span t-field="o.name"/></h4>
+                            </div>
+                            <div class="col-4 text-end">
+                                <span class="badge bg-danger fs-6 py-2 px-3 text-uppercase">
+                                    Status: <span t-field="o.status"/>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4 border-top pt-3">
+                            <div class="col-6">
+                                <strong>Vehicle:</strong> <span t-field="o.vehicle_id.name"/> (<span t-field="o.vehicle_id.registration_no"/>)<br/>
+                                <strong>Issue:</strong> <span t-field="o.issue"/><br/>
+                                <strong>Priority:</strong> <span t-field="o.priority"/><br/>
+                                <strong>Technician:</strong> <span t-field="o.technician"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>Estimated Cost:</strong> $<span t-field="o.estimated_cost" t-options='{"widget": "float", "precision": 2}'/><br/>
+                                <strong>Actual Cost:</strong> $<span t-field="o.actual_cost" t-options='{"widget": "float", "precision": 2}'/><br/>
+                                <strong>Start Date:</strong> <span t-field="o.start_date"/><br/>
+                                <strong>End Date:</strong> <span t-field="o.end_date"/>
+                            </div>
+                        </div>
+
+                        <div class="border-top pt-3">
+                            <strong>Detailed Description:</strong>
+                            <p class="mt-2 text-muted" t-field="o.description"/>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Fuel Log Template -->
+    <template id="report_fuel_log_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-primary fw-bold mb-4">Fuel Receipt Registry</h2>
+                        <div class="row mb-4 border-top pt-3">
+                            <div class="col-6">
+                                <strong>Vehicle:</strong> <span t-field="o.vehicle_id.name"/><br/>
+                                <strong>Odometer:</strong> <span t-field="o.odometer"/> km<br/>
+                                <strong>Fuel Station:</strong> <span t-field="o.station"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>Date:</strong> <span t-field="o.date"/><br/>
+                                <strong>Fuel Type:</strong> <span t-field="o.fuel_type"/>
+                            </div>
+                        </div>
+                        <div class="row border-top pt-3">
+                            <div class="col-4">
+                                <strong>Liters:</strong> <span t-field="o.liters"/> L
+                            </div>
+                            <div class="col-4">
+                                <strong>Price/L:</strong> $<span t-field="o.price_per_liter" t-options='{"widget": "float", "precision": 2}'/>
+                            </div>
+                            <div class="col-4 text-end text-primary fw-bold fs-5">
+                                Total: $<span t-field="o.total_cost" t-options='{"widget": "float", "precision": 2}'/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Expense Template -->
+    <template id="report_expense_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-primary fw-bold mb-4">Expense Ticket</h2>
+                        <div class="row mb-4 border-top pt-3">
+                            <div class="col-6">
+                                <strong>Vehicle:</strong> <span t-field="o.vehicle_id.name"/> (<span t-field="o.vehicle_id.registration_no"/>)<br/>
+                                <strong>Expense Type:</strong> <span t-field="o.expense_type"/><br/>
+                                <strong>Expense Date:</strong> <span t-field="o.expense_date"/>
+                            </div>
+                            <div class="col-6 text-end text-success fw-bold fs-4">
+                                Amount: $<span t-field="o.amount" t-options='{"widget": "float", "precision": 2}'/>
+                            </div>
+                        </div>
+                        <div class="border-top pt-3">
+                            <strong>Description:</strong>
+                            <p class="mt-2 text-muted" t-field="o.description"/>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

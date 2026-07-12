@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_transit_trip_tree" model="ir.ui.view">
+        <name>transit.trip.tree</name>
+        <model>transit.trip</model>
+        <arch type="xml">
+            <tree string="Trips" decoration-info="status == 'draft'" decoration-warning="status == 'dispatched'" decoration-success="status == 'completed'" decoration-danger="status == 'cancelled'">
+                <field name="name"/>
+                <field name="source"/>
+                <field name="destination"/>
+                <field name="vehicle_id"/>
+                <field name="driver_id"/>
+                <field name="cargo_weight"/>
+                <field name="planned_distance"/>
+                <field name="actual_distance"/>
+                <field name="dispatch_date"/>
+                <field name="status" widget="badge" decoration-info="status == 'draft'" decoration-warning="status == 'dispatched'" decoration-success="status == 'completed'" decoration-danger="status == 'cancelled'"/>
+                <field name="revenue" sum="Total Revenue"/>
+            </tree>
+        </arch>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_transit_trip_form" model="ir.ui.view">
+        <name>transit.trip.form</name>
+        <model>transit.trip</model>
+        <arch type="xml">
+            <form string="Trip Record">
+                <header>
+                    <button name="action_dispatch" type="object" string="Dispatch Trip" class="oe_highlight" invisible="status != 'draft'"/>
+                    <button name="action_complete" type="object" string="Complete Trip" class="oe_highlight" invisible="status != 'dispatched'"/>
+                    <button name="action_cancel" type="object" string="Cancel Trip" class="btn-danger" invisible="status not in ('draft', 'dispatched')"/>
+                    <button name="action_draft" type="object" string="Reset to Draft" invisible="status != 'cancelled'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,dispatched,completed,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Route Details">
+                            <field name="source"/>
+                            <field name="destination"/>
+                            <field name="planned_distance"/>
+                            <field name="actual_distance" readonly="status == 'draft'"/>
+                        </group>
+                        <group string="Dispatch Assignment">
+                            <field name="vehicle_id"/>
+                            <field name="driver_id"/>
+                            <field name="cargo_weight"/>
+                        </group>
+                        <group string="Scheduling">
+                            <field name="dispatch_date"/>
+                            <field name="completion_date" readonly="1"/>
+                        </group>
+                        <group string="Financials &amp; Performance">
+                            <field name="fuel_consumed" readonly="status == 'draft'"/>
+                            <field name="revenue"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </arch>
+    </record>
+
+    <!-- Calendar View -->
+    <record id="view_transit_trip_calendar" model="ir.ui.view">
+        <name>transit.trip.calendar</name>
+        <model>transit.trip</model>
+        <arch type="xml">
+            <calendar string="Trips Schedule" date_start="dispatch_date" date_stop="completion_date" color="status">
+                <field name="name"/>
+                <field name="source"/>
+                <field name="destination"/>
+                <field name="vehicle_id"/>
+                <field name="driver_id"/>
+            </calendar>
+        </arch>
+    </record>
+
+    <!-- Graph View -->
+    <record id="view_transit_trip_graph" model="ir.ui.view">
+        <name>transit.trip.graph</name>
+        <model>transit.trip</model>
+        <arch type="xml">
+            <graph string="Trips Analytics" type="bar">
+                <field name="destination"/>
+                <field name="revenue" type="measure"/>
+            </graph>
+        </arch>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="view_transit_trip_pivot" model="ir.ui.view">
+        <name>transit.trip.pivot</name>
+        <model>transit.trip</model>
+        <arch type="xml">
+            <pivot string="Trips Matrix">
+                <field name="vehicle_id" type="row"/>
+                <field name="status" type="col"/>
+                <field name="revenue" type="measure"/>
+                <field name="actual_distance" type="measure"/>
+            </pivot>
+        </arch>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_transit_trip_search" model="ir.ui.view">
+        <name>transit.trip.search</name>
+        <model>transit.trip</model>
+        <arch type="xml">
+            <search string="Search Trips">
+                <field name="name"/>
+                <field name="source"/>
+                <field name="destination"/>
+                <field name="vehicle_id"/>
+                <field name="driver_id"/>
+                <filter string="Draft" name="draft" domain="[('status', '=', 'draft')]"/>
+                <filter string="Dispatched" name="dispatched" domain="[('status', '=', 'dispatched')]"/>
+                <filter string="Completed" name="completed" domain="[('status', '=', 'completed')]"/>
+                <filter string="Cancelled" name="cancelled" domain="[('status', '=', 'cancelled')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Vehicle" name="group_by_vehicle" context="{'group_by': 'vehicle_id'}"/>
+                    <filter string="Driver" name="group_by_driver" context="{'group_by': 'driver_id'}"/>
+                    <filter string="Status" name="group_by_status" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </arch>
+    </record>
+
+    <!-- Action -->
+    <record id="action_transit_trip" model="ir.actions.act_window">
+        <name>Trips</name>
+        <res_model>transit.trip</res_model>
+        <view_mode>tree,form,calendar,graph,pivot</view_mode>
+        <search_view_id ref="view_transit_trip_search"/>
+    </record>
+</odoo>

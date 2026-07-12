@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dashboard Form View -->
+    <record id="view_transit_dashboard_form" model="ir.ui.view">
+        <name>transit.dashboard.form</name>
+        <model>transit.dashboard</model>
+        <arch type="xml">
+            <form string="Executive Dashboard" create="0" delete="0" edit="0">
+                <sheet>
+                    <div class="text-center mb-4">
+                        <h1 class="text-primary fw-bold" style="font-size: 2.5rem; letter-spacing: -0.05rem;">
+                            <i class="fa fa-tachometer me-2"/>TransitOps Operations Dashboard
+                        </h1>
+                        <p class="text-muted">Real-time Fleet, Driver, and Cost Management Intelligence</p>
+                    </div>
+
+                    <!-- Row 1: KPI Cards -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm bg-primary-subtle text-primary h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="fs-1 me-3"><i class="fa fa-truck"/></div>
+                                    <div>
+                                        <h6 class="card-title mb-1 text-uppercase fw-semibold small">Active Vehicles</h6>
+                                        <h3 class="card-text fw-bold mb-0"><field name="active_vehicles"/></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm bg-success-subtle text-success h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="fs-1 me-3"><i class="fa fa-check-circle"/></div>
+                                    <div>
+                                        <h6 class="card-title mb-1 text-uppercase fw-semibold small">Vehicles Available</h6>
+                                        <h3 class="card-text fw-bold mb-0"><field name="available_vehicles"/></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm bg-info-subtle text-info h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="fs-1 me-3"><i class="fa fa-user"/></div>
+                                    <div>
+                                        <h6 class="card-title mb-1 text-uppercase fw-semibold small">Drivers Available</h6>
+                                        <h3 class="card-text fw-bold mb-0"><field name="drivers_available"/></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm bg-warning-subtle text-warning h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="fs-1 me-3"><i class="fa fa-road"/></div>
+                                    <div>
+                                        <h6 class="card-title mb-1 text-uppercase fw-semibold small">Drivers On Trip</h6>
+                                        <h3 class="card-text fw-bold mb-0"><field name="drivers_on_trip"/></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Secondary KPIs -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm bg-dark-subtle text-dark h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="fs-1 me-3"><i class="fa fa-calendar-today"/></div>
+                                    <div>
+                                        <h6 class="card-title mb-1 text-uppercase fw-semibold small">Trips Today</h6>
+                                        <h3 class="card-text fw-bold mb-0"><field name="trips_today"/></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm bg-danger-subtle text-danger h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="fs-1 me-3"><i class="fa fa-wrench"/></div>
+                                    <div>
+                                        <h6 class="card-title mb-1 text-uppercase fw-semibold small">Pending Maintenance</h6>
+                                        <h3 class="card-text fw-bold mb-0"><field name="maintenance_pending"/></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm bg-light text-dark h-100 border-start border-4 border-info">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="fs-1 me-3 text-info"><i class="fa fa-tint"/></div>
+                                    <div>
+                                        <h6 class="card-title mb-1 text-uppercase fw-semibold small">Fuel Cost</h6>
+                                        <h3 class="card-text fw-bold mb-0">$<field name="fuel_cost"/></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm bg-light text-dark h-100 border-start border-4 border-success">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="fs-1 me-3 text-success"><i class="fa fa-usd"/></div>
+                                    <div>
+                                        <h6 class="card-title mb-1 text-uppercase fw-semibold small">Operational Cost</h6>
+                                        <h3 class="card-text fw-bold mb-0">$<field name="operational_cost"/></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Quick Navigation Actions -->
+                    <div class="card border-0 shadow-sm mt-4">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h5 class="fw-bold mb-0"><i class="fa fa-rocket me-2 text-primary"/>Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3 text-center">
+                                <div class="col-md-3">
+                                    <button name="action_open_vehicles" type="object" class="btn btn-outline-primary btn-lg w-100 py-3">
+                                        <i class="fa fa-truck me-2"/>Manage Fleet
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button name="action_open_drivers" type="object" class="btn btn-outline-success btn-lg w-100 py-3">
+                                        <i class="fa fa-user me-2"/>Manage Drivers
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button name="action_open_trips" type="object" class="btn btn-outline-info btn-lg w-100 py-3">
+                                        <i class="fa fa-road me-2"/>Dispatch Center
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button name="action_open_maintenance" type="object" class="btn btn-outline-danger btn-lg w-100 py-3">
+                                        <i class="fa fa-wrench me-2"/>Maintenance Shop
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </arch>
+    </record>
+
+    <!-- Custom Client Action / Windows Action to Open Dashboard -->
+    <record id="action_transit_dashboard" model="ir.actions.act_window">
+        <name>Dashboard</name>
+        <res_model>transit.dashboard</res_model>
+        <view_mode>form</view_mode>
+        <target>current</target>
+    </record>
+
+    <!-- Auto-create a singleton dashboard row on action load so it works seamlessly -->
+    <record id="action_transit_dashboard_eval" model="ir.actions.server">
+        <name>Load TransitOps Dashboard</name>
+        <model_id ref="model_transit_dashboard"/>
+        <state>code</state>
+        <code>
+# Retrieve first dashboard or create one
+dashboard = env['transit.dashboard'].search([], limit=1)
+if not dashboard:
+    dashboard = env['transit.dashboard'].create({})
+action = {
+    'type': 'ir.actions.act_window',
+    'res_model': 'transit.dashboard',
+    'view_mode': 'form',
+    'res_id': dashboard.id,
+    'target': 'current',
+}
+        </code>
+    </record>
+</odoo>

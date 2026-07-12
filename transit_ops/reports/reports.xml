@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vehicle Report Action -->
+    <record id="action_report_vehicle" model="ir.actions.report">
+        <name>Vehicle Profile</name>
+        <model>transit.vehicle</model>
+        <report_type>qweb-pdf</report_type>
+        <report_name>transit_ops.report_vehicle_template</report_name>
+        <report_file>transit_ops.report_vehicle_template</report_file>
+        <print_report_name>'Vehicle_%s' % (object.registration_no)</print_report_name>
+        <binding_model_id ref="model_transit_vehicle"/>
+        <binding_type>report</binding_type>
+    </record>
+
+    <!-- Trip Report Action -->
+    <record id="action_report_trip" model="ir.actions.report">
+        <name>Trip Report</name>
+        <model>transit.trip</model>
+        <report_type>qweb-pdf</report_type>
+        <report_name>transit_ops.report_trip_template</report_name>
+        <report_file>transit_ops.report_trip_template</report_file>
+        <print_report_name>'Trip_%s' % (object.name)</print_report_name>
+        <binding_model_id ref="model_transit_trip"/>
+        <binding_type>report</binding_type>
+    </record>
+
+    <!-- Maintenance Report Action -->
+    <record id="action_report_maintenance" model="ir.actions.report">
+        <name>Maintenance Details</name>
+        <model>transit.maintenance</model>
+        <report_type>qweb-pdf</report_type>
+        <report_name>transit_ops.report_maintenance_template</report_name>
+        <report_file>transit_ops.report_maintenance_template</report_file>
+        <print_report_name>'Maintenance_%s' % (object.name)</print_report_name>
+        <binding_model_id ref="model_transit_maintenance"/>
+        <binding_type>report</binding_type>
+    </record>
+
+    <!-- Fuel Report Action -->
+    <record id="action_report_fuel_log" model="ir.actions.report">
+        <name>Fuel Log Report</name>
+        <model>transit.fuel.log</model>
+        <report_type>qweb-pdf</report_type>
+        <report_name>transit_ops.report_fuel_log_template</report_name>
+        <report_file>transit_ops.report_fuel_log_template</report_file>
+        <print_report_name>'FuelLog_%s' % (object.id)</print_report_name>
+        <binding_model_id ref="model_transit_fuel_log"/>
+        <binding_type>report</binding_type>
+    </record>
+
+    <!-- Expense Report Action -->
+    <record id="action_report_expense" model="ir.actions.report">
+        <name>Expense Ticket</name>
+        <model>transit.expense</model>
+        <report_type>qweb-pdf</report_type>
+        <report_name>transit_ops.report_expense_template</report_name>
+        <report_file>transit_ops.report_expense_template</report_file>
+        <print_report_name>'Expense_%s' % (object.id)</print_report_name>
+        <binding_model_id ref="model_transit_expense"/>
+        <binding_type>report</binding_type>
+    </record>
+</odoo>

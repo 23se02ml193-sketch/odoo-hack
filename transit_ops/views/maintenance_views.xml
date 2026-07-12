@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_transit_maintenance_tree" model="ir.ui.view">
+        <name>transit.maintenance.tree</name>
+        <model>transit.maintenance</model>
+        <arch type="xml">
+            <tree string="Maintenance Records" decoration-info="status == 'pending'" decoration-warning="status == 'in_progress'" decoration-success="status == 'completed'" decoration-danger="status == 'rejected'">
+                <field name="name"/>
+                <field name="vehicle_id"/>
+                <field name="issue"/>
+                <field name="priority" widget="badge" decoration-danger="priority == 'critical'" decoration-warning="priority == 'high'" decoration-info="priority == 'medium'"/>
+                <field name="technician"/>
+                <field name="estimated_cost"/>
+                <field name="actual_cost" sum="Total Actual Cost"/>
+                <field name="start_date"/>
+                <field name="status" widget="badge" decoration-info="status == 'pending'" decoration-warning="status == 'in_progress'" decoration-success="status == 'completed'" decoration-danger="status == 'rejected'"/>
+            </tree>
+        </arch>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_transit_maintenance_form" model="ir.ui.view">
+        <name>transit.maintenance.form</name>
+        <model>transit.maintenance</model>
+        <arch type="xml">
+            <form string="Maintenance Record">
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="status != 'pending'"/>
+                    <button name="action_reject" type="object" string="Reject" class="btn-danger" invisible="status != 'pending'"/>
+                    <button name="action_start" type="object" string="Start Work" class="oe_highlight" invisible="status not in ('approved', 'pending')"/>
+                    <button name="action_complete" type="object" string="Complete Maintenance" class="oe_highlight" invisible="status != 'in_progress'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="pending,approved,in_progress,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Vehicle &amp; Issue">
+                            <field name="vehicle_id"/>
+                            <field name="issue"/>
+                            <field name="priority"/>
+                            <field name="description"/>
+                        </group>
+                        <group string="Schedule &amp; Costs">
+                            <field name="technician"/>
+                            <field name="estimated_cost"/>
+                            <field name="actual_cost" readonly="status in ('pending', 'approved')"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </arch>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="view_transit_maintenance_kanban" model="ir.ui.view">
+        <name>transit.maintenance.kanban</name>
+        <model>transit.maintenance</model>
+        <arch type="xml">
+            <kanban default_group_by="status" class="o_kanban_mobile">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="vehicle_id"/>
+                <field name="issue"/>
+                <field name="priority"/>
+                <field name="status"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-primary"><field name="name"/></span>
+                                <span class="badge bg-light text-dark"><field name="priority"/></span>
+                            </div>
+                            <div class="text-muted mt-1">
+                                <field name="vehicle_id"/>
+                            </div>
+                            <div class="mt-2 text-truncate">
+                                <field name="issue"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </arch>
+    </record>
+
+    <!-- Action -->
+    <record id="action_transit_maintenance" model="ir.actions.act_window">
+        <name>Maintenance</name>
+        <res_model>transit.maintenance</res_model>
+        <view_mode>tree,kanban,form</view_mode>
+    </record>
+</odoo>

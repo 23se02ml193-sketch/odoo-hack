@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_transit_fuel_log_tree" model="ir.ui.view">
+        <name>transit.fuel.log.tree</name>
+        <model>transit.fuel.log</model>
+        <arch type="xml">
+            <tree string="Fuel Logs">
+                <field name="date"/>
+                <field name="vehicle_id"/>
+                <field name="fuel_type"/>
+                <field name="liters" sum="Total Liters"/>
+                <field name="price_per_liter"/>
+                <field name="total_cost" sum="Total Fuel Cost"/>
+                <field name="odometer"/>
+                <field name="distance_since_last"/>
+                <field name="fuel_efficiency"/>
+                <field name="distance_per_liter"/>
+                <field name="station"/>
+            </tree>
+        </arch>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_transit_fuel_log_form" model="ir.ui.view">
+        <name>transit.fuel.log.form</name>
+        <model>transit.fuel.log</model>
+        <arch type="xml">
+            <form string="Fuel Log Entry">
+                <sheet>
+                    <group>
+                        <group string="Log Information">
+                            <field name="vehicle_id"/>
+                            <field name="fuel_type"/>
+                            <field name="date"/>
+                            <field name="station"/>
+                        </group>
+                        <group string="Quantities &amp; Costs">
+                            <field name="liters"/>
+                            <field name="price_per_liter"/>
+                            <field name="total_cost" readonly="1"/>
+                            <field name="odometer"/>
+                        </group>
+                    </group>
+                    <group string="Efficiency Calculations" col="3">
+                        <field name="distance_since_last" readonly="1"/>
+                        <field name="fuel_efficiency" readonly="1"/>
+                        <field name="distance_per_liter" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </arch>
+    </record>
+
+    <!-- Graph View -->
+    <record id="view_transit_fuel_log_graph" model="ir.ui.view">
+        <name>transit.fuel.log.graph</name>
+        <model>transit.fuel.log</model>
+        <arch type="xml">
+            <graph string="Fuel Costs by Vehicle" type="bar">
+                <field name="vehicle_id"/>
+                <field name="total_cost" type="measure"/>
+            </graph>
+        </arch>
+    </record>
+
+    <!-- Action -->
+    <record id="action_transit_fuel_log" model="ir.actions.act_window">
+        <name>Fuel Logs</name>
+        <res_model>transit.fuel.log</res_model>
+        <view_mode>tree,form,graph</view_mode>
+    </record>
+</odoo>

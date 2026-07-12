@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_transit_driver_tree" model="ir.ui.view">
+        <name>transit.driver.tree</name>
+        <model>transit.driver</model>
+        <arch type="xml">
+            <tree string="Drivers" decoration-success="status == 'available'" decoration-warning="status == 'on_trip'" decoration-danger="status == 'suspended'" decoration-muted="status == 'off_duty'">
+                <field name="name"/>
+                <field name="email"/>
+                <field name="phone"/>
+                <field name="license_no"/>
+                <field name="license_category"/>
+                <field name="license_expiry"/>
+                <field name="safety_score" widget="progressbar"/>
+                <field name="status" widget="badge" decoration-success="status == 'available'" decoration-warning="status == 'on_trip'" decoration-danger="status == 'suspended'" decoration-muted="status == 'off_duty'"/>
+            </tree>
+        </arch>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_transit_driver_form" model="ir.ui.view">
+        <name>transit.driver.form</name>
+        <model>transit.driver</model>
+        <arch type="xml">
+            <form string="Driver Profile">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="available,on_trip,off_duty,suspended"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_trips" type="object" class="oe_stat_button" icon="fa-road">
+                            <field name="trip_count" widget="statinfo" string="Trips"/>
+                        </button>
+                    </div>
+                    <field name="photo" widget="image" class="oe_avatar" options="{'zoom': true, 'preview_image': 'photo'}"/>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. John Doe"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Contact Info">
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="address"/>
+                            <field name="emergency_contact"/>
+                        </group>
+                        <group string="License &amp; Performance">
+                            <field name="license_no"/>
+                            <field name="license_category"/>
+                            <field name="license_expiry"/>
+                            <field name="safety_score"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Assigned Trips" name="trips">
+                            <field name="trip_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="source"/>
+                                    <field name="destination"/>
+                                    <field name="vehicle_id"/>
+                                    <field name="status"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </arch>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="view_transit_driver_kanban" model="ir.ui.view">
+        <name>transit.driver.kanban</name>
+        <model>transit.driver</model>
+        <arch type="xml">
+            <kanban default_group_by="status" class="o_kanban_mobile">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="email"/>
+                <field name="license_category"/>
+                <field name="status"/>
+                <field name="photo"/>
+                <field name="safety_score"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex flex-row p-2 align-items-center">
+                            <div class="me-3">
+                                <t t-if="record.photo.raw_value">
+                                    <img t-att-src="kanban_image('transit.driver', 'photo', record.id.raw_value)" class="avatar rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" alt="Driver"/>
+                                </t>
+                                <t t-else="">
+                                    <span class="fa fa-user-circle text-muted" style="font-size: 40px;"/>
+                                </t>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold text-primary">
+                                    <field name="name"/>
+                                </div>
+                                <div class="text-muted small">
+                                    <field name="email"/>
+                                </div>
+                                <div class="text-muted small">
+                                    Lic: <field name="license_category"/> | Safety: <field name="safety_score"/>%
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </arch>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_transit_driver_search" model="ir.ui.view">
+        <name>transit.driver.search</name>
+        <model>transit.driver</model>
+        <arch type="xml">
+            <search string="Search Drivers">
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('license_no', 'ilike', self)]"/>
+                <field name="license_no"/>
+                <filter string="Available" name="available" domain="[('status', '=', 'available')]"/>
+                <filter string="On Trip" name="on_trip" domain="[('status', '=', 'on_trip')]"/>
+                <filter string="Suspended" name="suspended" domain="[('status', '=', 'suspended')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="group_by_status" context="{'group_by': 'status'}"/>
+                    <filter string="License Category" name="group_by_license_category" context="{'group_by': 'license_category'}"/>
+                </group>
+            </search>
+        </arch>
+    </record>
+
+    <!-- Action -->
+    <record id="action_transit_driver" model="ir.actions.act_window">
+        <name>Drivers</name>
+        <res_model>transit.driver</res_model>
+        <view_mode>kanban,tree,form</view_mode>
+        <search_view_id ref="view_transit_driver_search"/>
+    </record>
+</odoo>
