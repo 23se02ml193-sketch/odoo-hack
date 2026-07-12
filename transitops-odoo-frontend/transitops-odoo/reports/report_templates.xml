@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        TransitOps — Fleet Operations Report (PDF)
+        Renders through wkhtmltopdf, so keep CSS simple: tables, flexbox-lite,
+        no CSS grid. Wrapped in web.external_layout for Odoo's standard
+        header/footer (company logo, page numbers). Bind this to a print
+        button on the Vehicle or Trip model via a matching ir.actions.report.
+    -->
+    <template id="report_fleet_operations_document">
+        <t t-call="web.external_layout">
+            <div class="page" style="font-family: Arial, sans-serif; color: #1a1a1a;">
+
+                <div style="background:#0B1220; color:#E8ECF3; padding:18px 22px; border-radius:8px; margin-bottom:20px;">
+                    <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#F4A825;">
+                        Fleet Operations Report
+                    </div>
+                    <h2 style="margin:6px 0 2px 0; color:#ffffff;">TransitOps — Operational Summary</h2>
+                    <div style="font-size:11px; color:#8A94A6;">
+                        Generated on <span t-esc="report_date"/> · Period: <span t-esc="report_period"/>
+                    </div>
+                </div>
+
+                <!-- KPI strip -->
+                <table style="width:100%; border-collapse:collapse; margin-bottom:18px;">
+                    <tr>
+                        <td style="width:20%; padding:10px; border:1px solid #ddd; text-align:center;">
+                            <div style="font-size:20px; font-weight:bold;" t-esc="kpi_active_vehicles"/>
+                            <div style="font-size:9px; color:#666; text-transform:uppercase;">Active Vehicles</div>
+                        </td>
+                        <td style="width:20%; padding:10px; border:1px solid #ddd; text-align:center;">
+                            <div style="font-size:20px; font-weight:bold; color:#1f7a58;" t-esc="kpi_available_vehicles"/>
+                            <div style="font-size:9px; color:#666; text-transform:uppercase;">Available</div>
+                        </td>
+                        <td style="width:20%; padding:10px; border:1px solid #ddd; text-align:center;">
+                            <div style="font-size:20px; font-weight:bold; color:#8a6318;" t-esc="kpi_in_maintenance"/>
+                            <div style="font-size:9px; color:#666; text-transform:uppercase;">In Maintenance</div>
+                        </td>
+                        <td style="width:20%; padding:10px; border:1px solid #ddd; text-align:center;">
+                            <div style="font-size:20px; font-weight:bold;" t-esc="kpi_total_trips"/>
+                            <div style="font-size:9px; color:#666; text-transform:uppercase;">Trips This Period</div>
+                        </td>
+                        <td style="width:20%; padding:10px; border:1px solid #ddd; text-align:center;">
+                            <div style="font-size:20px; font-weight:bold;" t-esc="kpi_fleet_utilization"/>%
+                            <div style="font-size:9px; color:#666; text-transform:uppercase;">Utilization</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Per-vehicle cost & performance table -->
+                <h4 style="margin-bottom:8px;">Vehicle Performance &amp; Cost</h4>
+                <table style="width:100%; border-collapse:collapse; font-size:10px;">
+                    <thead>
+                        <tr style="background:#f2f2f2;">
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:left;">Reg. Number</th>
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:left;">Vehicle</th>
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:right;">Distance (km)</th>
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:right;">Fuel Efficiency (km/L)</th>
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:right;">Fuel Cost</th>
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:right;">Maintenance Cost</th>
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:right;">Total Op. Cost</th>
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:right;">ROI %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="vehicle_rows" t-as="v">
+                            <td style="padding:6px 8px; border:1px solid #ddd;" t-esc="v['reg_number']"/>
+                            <td style="padding:6px 8px; border:1px solid #ddd;" t-esc="v['name']"/>
+                            <td style="padding:6px 8px; border:1px solid #ddd; text-align:right;" t-esc="v['distance']"/>
+                            <td style="padding:6px 8px; border:1px solid #ddd; text-align:right;" t-esc="v['fuel_efficiency']"/>
+                            <td style="padding:6px 8px; border:1px solid #ddd; text-align:right;" t-esc="v['fuel_cost']"/>
+                            <td style="padding:6px 8px; border:1px solid #ddd; text-align:right;" t-esc="v['maintenance_cost']"/>
+                            <td style="padding:6px 8px; border:1px solid #ddd; text-align:right; font-weight:bold;" t-esc="v['total_cost']"/>
+                            <td style="padding:6px 8px; border:1px solid #ddd; text-align:right;" t-esc="v['roi']"/>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p style="font-size:9px; color:#888; margin-top:6px;">
+                    ROI = (Estimated Revenue − (Maintenance + Fuel)) / Acquisition Cost.
+                </p>
+
+                <!-- Compliance flags -->
+                <h4 style="margin:18px 0 8px 0;">Driver Compliance Flags</h4>
+                <table style="width:100%; border-collapse:collapse; font-size:10px;">
+                    <thead>
+                        <tr style="background:#f2f2f2;">
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:left;">Driver</th>
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:left;">License Expiry</th>
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:left;">Safety Score</th>
+                            <th style="padding:6px 8px; border:1px solid #ddd; text-align:left;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="driver_flag_rows" t-as="d">
+                            <td style="padding:6px 8px; border:1px solid #ddd;" t-esc="d['name']"/>
+                            <td style="padding:6px 8px; border:1px solid #ddd;" t-esc="d['license_expiry']"/>
+                            <td style="padding:6px 8px; border:1px solid #ddd;" t-esc="d['safety_score']"/>
+                            <td style="padding:6px 8px; border:1px solid #ddd;" t-esc="d['status']"/>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </t>
+    </template>
+
+    <template id="report_fleet_operations">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="report_date">
+                <t t-call="transitops.report_fleet_operations_document"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_fleet_operations" model="ir.actions.report">
+        <field name="name">Fleet Operations Report</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">transitops.report_fleet_operations</field>
+        <field name="report_file">transitops.report_fleet_operations</field>
+        <field name="binding_model_id" ref="model_fleet_vehicle"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

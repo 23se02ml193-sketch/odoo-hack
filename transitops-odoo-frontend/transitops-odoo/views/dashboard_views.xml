@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        TransitOps — Operations Dashboard
+        Rendered as a QWeb template inside a client action (ir.actions.client
+        with tag="transitops.dashboard", or embedded via a controller route).
+        Bootstrap classes are Odoo's native grid; the o_transitops_dashboard
+        class + dashboard.scss give it the console look. Wire real KPI values
+        from the controller/model that calls this template — replace every
+        t-esc placeholder with a computed field or controller variable.
+    -->
+    <template id="transitops_dashboard_template" name="TransitOps Dashboard">
+        <div class="o_transitops_dashboard">
+
+            <!-- Header + filters -->
+            <div class="to_header">
+                <div>
+                    <div class="to_eyebrow">Live overview</div>
+                    <h1 class="to_title">Fleet Operations Dashboard</h1>
+                    <p class="to_subtitle">Real-time status across vehicles, drivers, and dispatch.</p>
+                </div>
+                <div class="to_filters">
+                    <select name="vehicle_type_filter">
+                        <option value="">All types</option>
+                        <option value="van">Van</option>
+                        <option value="truck">Truck</option>
+                        <option value="mini_truck">Mini Truck</option>
+                        <option value="trailer">Trailer</option>
+                        <option value="pickup">Pickup</option>
+                    </select>
+                    <select name="region_filter">
+                        <option value="">All regions</option>
+                        <option value="north">North</option>
+                        <option value="south">South</option>
+                        <option value="east">East</option>
+                        <option value="west">West</option>
+                    </select>
+                    <select name="status_filter">
+                        <option value="">All statuses</option>
+                        <option value="available">Available</option>
+                        <option value="on_trip">On Trip</option>
+                        <option value="in_shop">In Shop</option>
+                        <option value="retired">Retired</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- KPI row -->
+            <div class="to_kpi_row">
+                <div class="to_kpi_card">
+                    <div class="to_kpi_label">Active Vehicles</div>
+                    <div class="to_kpi_value" t-esc="active_vehicles_count"/>
+                </div>
+                <div class="to_kpi_card">
+                    <div class="to_kpi_label">Available Vehicles</div>
+                    <div class="to_kpi_value teal" t-esc="available_vehicles_count"/>
+                </div>
+                <div class="to_kpi_card">
+                    <div class="to_kpi_label">Vehicles in Maintenance</div>
+                    <div class="to_kpi_value info" t-esc="in_maintenance_count"/>
+                </div>
+                <div class="to_kpi_card">
+                    <div class="to_kpi_label">Active Trips</div>
+                    <div class="to_kpi_value amber" t-esc="active_trips_count"/>
+                </div>
+                <div class="to_kpi_card">
+                    <div class="to_kpi_label">Pending Trips</div>
+                    <div class="to_kpi_value" t-esc="pending_trips_count"/>
+                </div>
+                <div class="to_kpi_card">
+                    <div class="to_kpi_label">Drivers On Duty</div>
+                    <div class="to_kpi_value amber" t-esc="drivers_on_duty_count"/>
+                </div>
+                <div class="to_kpi_card">
+                    <div class="to_kpi_label">Fleet Utilization</div>
+                    <div class="to_kpi_value teal">
+                        <t t-esc="fleet_utilization_pct"/>%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fleet status table (replaces a chart if no JS charting lib is wired up) -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="to_panel">
+                        <div class="to_panel_title">Fleet status split</div>
+                        <table class="to_table">
+                            <thead>
+                                <tr><th>Status</th><th>Vehicles</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="fleet_status_breakdown" t-as="row">
+                                    <td>
+                                        <span t-attf-class="to_status_badge status-#{row['slug']}">
+                                            <span class="dot"/>
+                                            <t t-esc="row['label']"/>
+                                        </span>
+                                    </td>
+                                    <td t-esc="row['count']"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="to_panel">
+                        <div class="to_panel_title">Trips by lifecycle stage</div>
+                        <table class="to_table">
+                            <thead>
+                                <tr><th>Stage</th><th>Trips</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="trip_stage_breakdown" t-as="row">
+                                    <td t-esc="row['label']"/>
+                                    <td t-esc="row['count']"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent activity -->
+            <div class="to_panel">
+                <div class="to_panel_title">Recent dispatch activity</div>
+                <table class="to_table">
+                    <thead>
+                        <tr>
+                            <th>Trip</th><th>Vehicle</th><th>Driver</th><th>Status</th><th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="recent_trips" t-as="trip">
+                            <td>
+                                <t t-esc="trip['source']"/> → <t t-esc="trip['destination']"/>
+                            </td>
+                            <td t-esc="trip['vehicle_reg']"/>
+                            <td t-esc="trip['driver_name']"/>
+                            <td>
+                                <span t-attf-class="to_status_badge status-#{trip['status_slug']}">
+                                    <span class="dot"/>
+                                    <t t-esc="trip['status_label']"/>
+                                </span>
+                            </td>
+                            <td t-esc="trip['date']"/>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <!-- Client action wiring: point this to a controller that computes the
+         KPI values above and renders transitops_dashboard_template. -->
+    <record id="action_transitops_dashboard" model="ir.actions.client">
+        <field name="name">Fleet Dashboard</field>
+        <field name="tag">transitops_dashboard</field>
+    </record>
+
+    <menuitem id="menu_transitops_dashboard"
+              name="Dashboard"
+              action="action_transitops_dashboard"
+              sequence="1"/>
+</odoo>

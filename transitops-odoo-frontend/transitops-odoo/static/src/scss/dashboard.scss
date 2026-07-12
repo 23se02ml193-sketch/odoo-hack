@@ -1,0 +1,175 @@
+/* TransitOps — Odoo dashboard styling
+   Same design language as the design-exploration web client:
+   deep navy console background, amber = active/dispatch, teal = available/good,
+   blue = in shop, red = alert/suspended. Reuse these variables anywhere new
+   dashboard blocks are added so every screen stays visually consistent. */
+
+$to-ink: #0B1220;
+$to-panel: #121B2E;
+$to-panel-raised: #182338;
+$to-hairline: #24304a;
+$to-amber: #F4A825;
+$to-teal: #3DDC97;
+$to-alert: #EF5350;
+$to-info: #5B9FED;
+$to-text: #E8ECF3;
+$to-text-muted: #8A94A6;
+$to-text-faint: #5A6478;
+
+.o_transitops_dashboard {
+    background-color: $to-ink;
+    padding: 24px;
+    font-family: "Inter", -apple-system, sans-serif;
+    color: $to-text;
+    min-height: 100%;
+
+    .to_header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+
+        .to_eyebrow {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: $to-amber;
+            margin-bottom: 4px;
+        }
+        .to_title {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0;
+            color: $to-text;
+        }
+        .to_subtitle {
+            font-size: 13px;
+            color: $to-text-muted;
+            margin-top: 4px;
+        }
+
+        .to_filters select {
+            background-color: $to-panel-raised;
+            border: 1px solid $to-hairline;
+            color: $to-text;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+    }
+
+    .to_kpi_row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+
+        .to_kpi_card {
+            background-color: $to-panel;
+            border: 1px solid $to-hairline;
+            border-radius: 12px;
+            padding: 16px;
+            flex: 1 1 200px;
+            min-width: 180px;
+            position: relative;
+
+            .to_kpi_label {
+                font-size: 12px;
+                color: $to-text-muted;
+            }
+            .to_kpi_value {
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 26px;
+                font-weight: 700;
+                margin-top: 8px;
+                color: $to-text;
+
+                &.amber { color: $to-amber; }
+                &.teal { color: $to-teal; }
+                &.info { color: $to-info; }
+                &.alert { color: $to-alert; }
+            }
+            .to_kpi_icon {
+                position: absolute;
+                top: 14px;
+                right: 14px;
+                width: 34px;
+                height: 34px;
+                border-radius: 8px;
+                background: $to-panel-raised;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: $to-text-muted;
+            }
+        }
+    }
+
+    .to_panel {
+        background-color: $to-panel;
+        border: 1px solid $to-hairline;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+
+        .to_panel_title {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: $to-text;
+        }
+    }
+
+    table.to_table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+
+        thead th {
+            text-align: left;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            color: $to-text-faint;
+            border-bottom: 1px solid $to-hairline;
+            padding: 10px 12px;
+            font-weight: 500;
+        }
+        tbody td {
+            padding: 10px 12px;
+            border-bottom: 1px solid $to-hairline;
+            color: $to-text-muted;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background-color: $to-panel-raised; }
+    }
+
+    .to_status_badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid $to-hairline;
+        background-color: $to-panel-raised;
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 11px;
+        font-family: "JetBrains Mono", monospace;
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+        }
+        &.status-available { .dot { background: $to-teal; } color: $to-teal; }
+        &.status-on-trip { .dot { background: $to-amber; } color: $to-amber; }
+        &.status-in-shop { .dot { background: $to-info; } color: $to-info; }
+        &.status-retired, &.status-off-duty { .dot { background: $to-text-faint; } color: $to-text-faint; }
+        &.status-suspended, &.status-cancelled { .dot { background: $to-alert; } color: $to-alert; }
+    }
+}
