@@ -36,27 +36,47 @@ export default function Dashboard() {
   const [regionFilter, setRegionFilter] = useState('All')
   const [statusFilter, setStatusFilter] = useState('All')
 
+  // Memoize filtered list to prevent recalculation on every render
   const filteredVehicles = useMemo(() => vehicles.filter((v) =>
     (typeFilter === 'All' || v.type === typeFilter) &&
     (regionFilter === 'All' || v.region === regionFilter) &&
     (statusFilter === 'All' || v.status === statusFilter)
   ), [vehicles, typeFilter, regionFilter, statusFilter])
 
-  const activeVehicles = filteredVehicles.filter((v) => v.status !== 'Retired').length
-  const availableVehicles = filteredVehicles.filter((v) => v.status === 'Available').length
-  const inMaintenance = filteredVehicles.filter((v) => v.status === 'In Shop').length
-  const activeTrips = trips.filter((t) => t.status === 'Dispatched').length
-  const pendingTrips = trips.filter((t) => t.status === 'Draft').length
-  const driversOnDuty = drivers.filter((d) => d.status === 'On Trip').length
-  const utilization = filteredVehicles.length ? Math.round((filteredVehicles.filter((v) => v.status === 'On Trip').length / filteredVehicles.length) * 100) : 0
+  // Compute all metrics in a single pass through filtered data
+  const metrics = useMemo(() => {
+    const activeVehicles = filteredVehicles.filter((v) => v.status !== 'Retired').length
+    const availableVehicles = filteredVehicles.filter((v) => v.status === 'Available').length
+    const inMaintenance = filteredVehicles.filter((v) => v.status === 'In Shop').length
+    const utilization = filteredVehicles.length ? Math.round((filteredVehicles.filter((v) => v.status === 'On Trip').length / filteredVehicles.length) * 100) : 0
 
-  const pieData = ['Available', 'On Trip', 'In Shop', 'Retired'].map((status) => ({
-    name: status, value: vehicles.filter((v) => v.status === status).length,
-  })).filter((d) => d.value > 0)
+    return { activeVehicles, availableVehicles, inMaintenance, utilization }
+  }, [filteredVehicles])
 
-  const tripBarData = ['Draft', 'Dispatched', 'Completed', 'Cancelled'].map((status) => ({
-    status, count: trips.filter((t) => t.status === status).length,
-  }))
+  // Trip metrics (not filtered, global view)
+  const tripMetrics = useMemo(() => {
+    const activeTrips = trips.filter((t) => t.status === 'Dispatched').length
+    const pendingTrips = trips.filter((t) => t.status === 'Draft').length
+    const driversOnDuty = drivers.filter((d) => d.status === 'On Trip').length
+
+    return { activeTrips, pendingTrips, driversOnDuty }
+  }, [trips, drivers])
+
+  // Memoize pie chart data
+  const pieData = useMemo(() => {
+    return ['Available', 'On Trip', 'In Shop', 'Retired'].map((status) => ({
+      name: status,
+      value: vehicles.filter((v) => v.status === status).length,
+    })).filter((d) => d.value > 0)
+  }, [vehicles])
+
+  // Memoize bar chart data
+  const tripBarData = useMemo(() => {
+    return ['Draft', 'Dispatched', 'Completed', 'Cancelled'].map((status) => ({
+      status,
+      count: trips.filter((t) => t.status === status).length,
+    }))
+  }, [trips])
 
   return (
     <div>
@@ -83,13 +103,13 @@ export default function Dashboard() {
       />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Kpi icon={Truck} label="Active Vehicles" value={activeVehicles} />
-        <Kpi icon={CheckCircle2} label="Available Vehicles" value={availableVehicles} tone="teal" />
-        <Kpi icon={Wrench} label="In Maintenance" value={inMaintenance} tone="info" />
-        <Kpi icon={Route} label="Active Trips" value={activeTrips} tone="amber" />
-        <Kpi icon={Clock} label="Pending Trips" value={pendingTrips} />
-        <Kpi icon={UserCheck} label="Drivers On Duty" value={driversOnDuty} tone="amber" />
-        <Kpi icon={Gauge} label="Fleet Utilization" value={`${utilization}%`} tone="teal" />
+        <Kpi icon={Truck} label="Active Vehicles" value={metrics.activeVehicles} />
+        <Kpi icon={CheckCircle2} label="Available Vehicles" value={metrics.availableVehicles} tone="teal" />
+        <Kpi icon={Wrench} label="In Maintenance" value={metrics.inMaintenance} tone="info" />
+        <Kpi icon={Route} label="Active Trips" value={tripMetrics.activeTrips} tone="amber" />
+        <Kpi icon={Clock} label="Pending Trips" value={tripMetrics.pendingTrips} />
+        <Kpi icon={UserCheck} label="Drivers On Duty" value={tripMetrics.driversOnDuty} tone="amber" />
+        <Kpi icon={Gauge} label="Fleet Utilization" value={`${metrics.utilization}%`} tone="teal" />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-5">
@@ -118,7 +138,7 @@ export default function Dashboard() {
           <p className="mb-4 font-[--font-display] text-sm font-semibold text-[--color-text]">Trips by lifecycle stage</p>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={tripBarData}>
+              <BarChart data={tripBarData} key="trip-bar-chart">
                 <CartesianGrid strokeDasharray="3 3" stroke="#24304a" vertical={false} />
                 <XAxis dataKey="status" stroke="#5A6478" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#5A6478" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />

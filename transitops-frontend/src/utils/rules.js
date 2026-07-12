@@ -44,6 +44,15 @@ export function daysUntil(dateStr) {
   return Math.ceil(diff / (1000 * 60 * 60 * 24))
 }
 
+// Debounce utility for live validation
+export function createDebounce(fn, delay = 300) {
+  let timeoutId = null
+  return function debounced(...args) {
+    if (timeoutId) clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => fn(...args), delay)
+  }
+}
+
 export const STATUS_COLORS = {
   // Vehicle / Driver
   Available: 'teal',
